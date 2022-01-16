@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/coreos/go-tcmu/scsi"
-	"github.com/prometheus/common/log"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 )
 
@@ -27,7 +27,7 @@ func (d *Device) beginPoll() {
 		for {
 			cmd, err := d.getNextCommand()
 			if err != nil {
-				log.Errorf("error getting next command: %s", err)
+				logrus.Errorf("error getting next command: %s", err)
 				break
 			}
 			if cmd == nil {
@@ -45,13 +45,13 @@ func (d *Device) recvResponse() {
 	for resp := range d.respChan {
 		err := d.completeCommand(resp)
 		if err != nil {
-			log.Errorf("error completing command: %s", err)
+			logrus.Errorf("error completing command: %s", err)
 			return
 		}
 		/* Tell the fd there's something new */
 		n, err = unix.Write(d.uioFd, buf)
 		if n == -1 && err != nil {
-			log.Errorln("poll write")
+			logrus.Errorln("poll write")
 			return
 		}
 	}
